@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-
 import Profile from "@components/Profile";
 
 const UserProfile = ({ params }) => {
@@ -20,7 +19,7 @@ const UserProfile = ({ params }) => {
     };
 
     if (params?.id) fetchPosts();
-  }, [params.id]);
+  }, [params?.id]);
 
   return (
     <Profile
@@ -31,4 +30,11 @@ const UserProfile = ({ params }) => {
   );
 };
 
-export default UserProfile;
+// Wrap your component with Suspense to handle CSR properly
+const UserProfileWithSuspense = (props) => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <UserProfile {...props} />
+  </Suspense>
+);
+
+export default UserProfileWithSuspense;
