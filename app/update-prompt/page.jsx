@@ -1,37 +1,47 @@
-import { Suspense } from "react";
+"use client";
+import { useEffect, useState, Suspense } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Form from "@components/Form";
 
-const EditPrompt = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <PromptEditForm />
-    </Suspense>
-  );
-};
-
-const PromptEditForm = () => {
+const UpdatePrompt = () => {
   const router = useRouter();
-  const SearchParams = useSearchParams();
-  const promptId = SearchParams.get("id");
 
-  const [submitting, setIsSubmitting] = useState(false);
-  const [post, setPost] = useState({ prompt: "", tag: "" });
+  const { data: session } = useSession();
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const searchParams = useSearchParams();
+
+  const promptId = searchParams.get("id");
+
+  const [post, setPost] = useState({
+    prompt: "",
+    tag: "",
+  });
 
   useEffect(() => {
     const getPromptDetails = async () => {
       const response = await fetch(`/api/prompt/${promptId}`);
       const data = await response.json();
+
       setPost({
         prompt: data.prompt,
         tag: data.tag,
       });
     };
-    if (promptId) getPromptDetails();
+    if (promptId) {
+      getPromptDetails();
+    }
   }, [promptId]);
 
   const updatePrompt = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    if (!promptId) return alert("Prompt ID not found");
+    setSubmitting(true);
+
+    if (!promptId) {
+      return alert("Prompt ID  not found!");
+    }
 
     try {
       const response = await fetch(`/api/prompt/${promptId}`, {
@@ -48,7 +58,7 @@ const PromptEditForm = () => {
     } catch (error) {
       console.log(error);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -59,7 +69,15 @@ const PromptEditForm = () => {
       setPost={setPost}
       submitting={submitting}
       handleSubmit={updatePrompt}
-    />
+    ></Form>
+  );
+};
+
+const EditPrompt = () => {
+  return (
+    <Suspense>
+      <UpdatePrompt />
+    </Suspense>
   );
 };
 
